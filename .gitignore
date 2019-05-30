@@ -1,5 +1,14 @@
-/build
+/build-*
 /tmp
+/cache
+/mntp
+/mnta
+/mntb
 
 *.tar.xz
+*.tar.gz
+
+a.img
+b.img
+p.img
 
