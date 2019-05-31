@@ -64,3 +64,7 @@ fdisk -l $IMG
 第一个分区称p分区，用于保存持久化数据，uboot的boot script（boot.cmd和boot.scr）位于该分区的`/boot`目录下；该分区也可以用于启动recovery模式。
 
 第二个和第三个分区分别称a分区和b分区，都是rootfs分区，用于实现a/b升级。
+
+ 21 part1 0cbc36fa-3b85-40af-946e-f15dce29d86b
+ 22 part2 689b853f-3749-4055-8359-054bd6e806b4
+ 23 part3 9bec42be-c362-4de0-9248-b198562ccd40

@@ -85,13 +85,16 @@ Device Drivers > Character devices > Serial device bus
 
 ```
 Networking support > Bluetooth subsystem support > Bluetooth device drivers
-    <*> HCI UART Driver
+    <M> HCI UART Driver
     -*-   UART (H4) protocol support
     ...
     [*] Broadcom protocol support
 ```
 
-+ BT_HCIUART_BCM依赖serial device bus和tty port controller选项；
+BT_HCIUART_BCM依赖serial device bus和tty port controller选项；需先设置SERIAL_DEV_BUS。
+
+BT_HCIUART_BCM需设置为M，否则需要在initramfs中添加固件。
+
 + 注意该配置页面上有两个Broadcom protocol support，应选择对应BT_HCIUART_BCM的；
 
 ### Disable PMU Clock Driver
@@ -141,11 +144,9 @@ Device Drivers > Block devices >
 This is experimental
 
 ```
-Device Drivers > USB support > USB Gadget > USB Gadget precomposed configuration
-    <M>   USB Gadget precomposed configurations
-    ...
-    <M>     CDC Composite Device (Ethernet and ACM)
-    ...
+Device Drivers > USB support > USB Gadget 
+    <*>   USB Gadget precomposed configurations ---> 
+        (X) Serial Gadget (with CDC ACM and CDC OBEX support)
 ```
 
 ## Device Tree
