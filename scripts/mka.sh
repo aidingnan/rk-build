@@ -88,6 +88,13 @@ managed=true
 wifi.scan-rand-mac-address=no
 EOF
 
+# create system generator for mounting alt root
+mkdir $MNT/etc/systemd/system-generators
+cp scripts/systemd/alt-root-mount-generator $MNT/etc/systemd/system-generators
+
+# create console for ttyGS0
+chroot $MNT ln -s /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@ttyGS0.service
+
 # enable systemd-resolvd
 chroot $MNT systemctl enable systemd-resolved
 ln -sf /run/systemd/resolve/resolv.conf $MNT/etc/resolv.conf

@@ -141,12 +141,19 @@ Device Drivers > Block devices >
 
 ### USB Gadget
 
-This is experimental
-
 ```
-Device Drivers > USB support > USB Gadget 
+Device Drivers > USB support > USB Gadget
+    [ ]   Serial gadget console support
     <*>   USB Gadget precomposed configurations ---> 
         (X) Serial Gadget (with CDC ACM and CDC OBEX support)
+```
+
+Serial gadget console support（CONFIG_U_SERIAL_CONSOLE）一定不要勾选。如果勾选该选项并且在kernel cmdline里传递CONSOLE=ttyGS0，则设备插在充电器上时无法启动，内核一直在等待ttyGS0；网上很多教程在pi和linux-sunxi上使用这种配置方式，但是在RK3328上有上述问题。
+
+正确的做法是不再内核里提供CONFIG_U_SERIAL_CONSOLE配置，但是内置G_SERIAL支持；不在cmdline中提供console=ttyGS0，而是创建一个getty@ttyGS0.service提供console。该方法不会导致启动等待ttyGS0的console，而在设备热插拔时仍然可以通过ttyGS0 (host-side ttyACM0)提供console服务。
+
+```
+ln -s /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@ttyGS0.service
 ```
 
 ## Device Tree

@@ -8,7 +8,7 @@ else
   echo "Boot from ${devtype} ${devnum}:${partnum}"
 fi
 
-setenv bootargs "root=${rootdev} rw rootwait rootfstype=ext4 console=tty0 console=ttyS2,1500000 loglevel=3"
+setenv bootargs "root=${rootdev} rw rootwait rootfstype=ext4 console=tty0 console=ttyS2,1500000 loglevel=0"
 
 load ${devtype} ${devnum}:${partnum} ${ramdisk_addr_r} ${prefix}uInitrd
 load ${devtype} ${devnum}:${partnum} ${kernel_addr_r} ${prefix}Image
