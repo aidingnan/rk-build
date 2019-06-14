@@ -68,3 +68,5 @@ fdisk -l $IMG
  21 part1 0cbc36fa-3b85-40af-946e-f15dce29d86b
  22 part2 689b853f-3749-4055-8359-054bd6e806b4
  23 part3 9bec42be-c362-4de0-9248-b198562ccd40
+
+# Partition (cow)

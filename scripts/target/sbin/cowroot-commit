@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#
+# snapshot (ephemeral) workspace and checkout
+#
+# 1. in shutdown hook
+# 2. in hijacker
+# 3. manually invoke is OK but not recommended
+
+set -e
+
+source cowroot-env
+source $SYSTEM_ENV
+
+if 
+  [ "$system_r_opts" == rw ] && 
+  [ "$system_l" != "$system_r" ]; then
+
+  uuid=$(cat /proc/sys/kernel/random/uuid)
+  RO_SUBVOL=$ROOT_MNT/$ro_subvol_dir/$uuid
+  btrfs subvolume snapshot "$RW_SUBVOL" "$RO_SUBVOL"
+  cowroot-checkout -w $uuid
+  echo "committed=$uuid"
+fi

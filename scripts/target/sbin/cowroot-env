@@ -1,0 +1,24 @@
+#!/bin/bash
+
+UUID_REGEX="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+
+ROOT_MNT=/run/cowroot/root                    # btrfs root volume mount point
+
+ro_subvol_dir=cowroot/ro
+rw_subvol_dir=cowroot/rw
+
+RO_SUBVOL_DIR=$ROOT_MNT/$ro_subvol_dir
+RW_SUBVOL_DIR=$ROOT_MNT/$rw_subvol_dir
+
+rw_subvol_uuid=2f8aea9f-67f9-4136-88e2-63f5c943f0b0
+rw_subvol_path=$rw_subvol_dir/$rw_subvol_uuid
+
+RW_SUBVOL=$ROOT_MNT/$rw_subvol_path
+
+tmp_subvol=cowroot/tmp_subvol
+TMP_SUBVOL=$ROOT_MNT/$tmp_subvol              # temp volume (for upgrade)
+
+SYSTEM_ENV=$ROOT_MNT/boot/system.env          # system env file
+SYSTEM_TMP=$ROOT_MNT/boot/system.env.tmp      # temp system env file
+RUN_BOOT_DIR=/run/cowroot/boot
+BOOT_ENV=$RUN_BOOT_DIR/boot.env               # boot env file

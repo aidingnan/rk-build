@@ -1,0 +1,26 @@
+#!/bin/bash
+
+source cowroot-env
+source $SYSTEM_ENV
+source $BOOT_ENV
+
+# ab|ab -> ab|bb
+if 
+  [ "$loader_l" == "$system_l" ] &&
+  [ "$loader_r" == "$system_r" ] &&
+  [ "$loader_l" != "$loader_r" ]; then
+
+cat > $SYSTEM_TMP << EOF
+system_l=$system_r
+system_l_opts=$system_r_opts
+system_r=$system_r
+system_r_opts=$system_r_opts
+EOF
+
+  mv $SYSTEM_TMP $SYSTEM_ENV
+
+else
+  echo "env not in confirming states"
+  cowroot-printenv
+  exit 1
+fi

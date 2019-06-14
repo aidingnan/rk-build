@@ -1,0 +1,4 @@
+#!/bin/bash
+
+TMPVOL=/run/cowroot/root/tmpvol
+

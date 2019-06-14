@@ -1,0 +1,71 @@
+#!/bin/bash
+
+set -e
+
+opts=ro
+replace=
+
+while getopts ":rw" o; do
+  case "${o}" in
+    r)
+      replace=true
+      ;;
+    w)
+      opts=rw
+      ;;
+    *)
+      echo "usage:"
+      echo "  cowroot-checkout [-w] <subvolume uuid b>        # _a|aa -> _a|ab"
+      echo "  cowroot-checkout -r [-w] <subvolume uuid c>     # _a|ab -> _a|ac"
+      echo "  cowroot-checkout -r                             # _a|ab -> _a|aa"
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+source cowroot-env
+source $SYSTEM_ENV
+source $BOOT_ENV
+
+if [ ${loader_r} == ${system_l} ]; then 
+  if [ ${system_l} == ${system_r} ]; then
+    subvol_uuid=$1 
+  else 
+    if [ -z $replace ]; then
+      echo "-r required for _a|ab"
+      exit 1
+    fi
+    
+    if [ -z $1 ]; then
+      subvol_uuid=$system_l
+      opts=$system_l_opts
+    else
+      subvol_uuid=$1
+    fi
+  fi
+
+  if [ -z $subvol_uuid ]; then
+    echo "subvolume uuid not provided" 
+    exit 1
+  fi
+ 
+  if [ ! -d $RO_SUBVOL_DIR/$subvol_uuid ]; then
+    echo "subvolume uuid ${subvol_uuid} not found in ro-subvolume directory" 
+    exit 1
+  fi
+
+cat > $SYSTEM_TMP << EOF
+system_l=$system_l
+system_l_opts=$system_l_opts
+system_r=$system_r
+system_r_opts=$system_r_opts
+EOF
+
+  mv $SYSTEM_TMP $SYSTEM_ENV
+
+else
+  echo "neither _a|aa nor _a|ab, action not allowed"
+  exit 1
+fi
+

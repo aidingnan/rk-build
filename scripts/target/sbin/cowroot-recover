@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# this script should only be called in cowroot hijacker
+#
+# aa|ab -> aa|aa
+
+set -e
+
+source cowroot-env
+source $SYSTEM_ENV
+source $BOOT_ENV
+
+# aa|ab
+if 
+  [ $loader_l == $loader_r ] &&
+  [ $loader_l == $system_l ] &&
+  [ $system_l != $system_r ]; then
+
+  recovered=$system_r
+  recovered_opts=$system_r_opts
+
+cat > $SYSTEM_TMP << EOF
+system_l=$system_l
+system_l_opts=$system_l_opts
+system_r=$system_l
+system_r_opts=$system_l_opts
+EOF
+
+  mv $SYSTEM_TMP $SYSTEM_ENV
+
+  echo "recovered=$recovered" >> $BOOT_ENV
+  echo "recovered_opts=$recovered_opts" >> $BOOT_ENV
+fi

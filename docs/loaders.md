@@ -149,4 +149,57 @@ make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu- all
 
 生成的文件中包括制作uboot.img所需的`u-boot-dtb.bin`文件。
 
+#### rkdeveloptool
+
+```
+# 枚举rkusb设备，应看到打印信息
+$ rkdeveloptool ld
+
+# 下载rkusb loader
+$ rkdeveloptool db rk3328_loader_v1.14.249.bin
+
+$ rkdeveloptool wl 0x00     part.img        # MBR/DOS分区表
+$ rkdeveloptool wl 0x40     idbloader.img   # spl
+$ rkdeveloptool wl 0x4000   uboot.img       # uboot
+$ rkdeveloptool wl 0x6000   trust.img       # atf
+$ rkdeveloptool wl 0x10000  p.img           # partition p (persistent)
+$ rkdeveloptool wl 0x210000 a.img           # partition a (rootfs a)
+```
+####
+
+
+```
+=> bdinfo
+arch_number = 0x0000000000000000
+boot_params = 0x0000000000000000
+DRAM bank   = 0x0000000000000000
+-> start    = 0x0000000000200000
+-> size     = 0x000000003fe00000
+baudrate    = 1500000 bps
+TLB addr    = 0x000000003fff0000
+relocaddr   = 0x000000003ff4a000
+reloc off   = 0x000000003fd4a000
+irq_sp      = 0x000000003df3aee0
+sp start    = 0x000000003df3aee0
+Early malloc usage: 498 / 800
+fdt_blob    = 0x000000003df3aef8
+```
+
+```
+-> start        = 0x00200000
+-> size         = 0x3fe00000
+
+scriptaddr      =0x00500000
+pxefile_addr_r  =0x00600000
+fdt_addr_r      =0x01f00000
+kernel_addr_r   =0x02080000
+ramdisk_addr_r  =0x04000000
+
+# safe ???
+                =0x08000000 
+
+# if set this is the address of the control flattened device tree used by U-Boot when CONFIG_OF_CONTROL is defined.
+fdtcontroladdr  =0x3df3aef8
+```
+
 
