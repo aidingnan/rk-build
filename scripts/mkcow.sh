@@ -14,15 +14,18 @@ fi
 
 KDEB_FILE=$1
 
-ROOTVOL_UUID=e383f6f7-6572-46a9-a7fa-2e0633015231 
-SUBVOL_UUID=
+# the predefined uuids
+root_vol=e383f6f7-6572-46a9-a7fa-2e0633015231     # root vol 
+ro_subvol=
+rw_subvol=ebcc3123-127a-4d26-b083-38e8c0bf7f09    # rw / working subvol
+tmp_subvol=07371046-38a3-43d5-9ded-d92584d7e751   # tmp / staging subvol 
 
 if [ -z $2 ]; then
-  SUBVOL_UUID=$(uuidgen)
-  echo "sub volume uuid not provided, auto generated: $SUBVOL_UUID"
+  ro_subvol=$(cat /proc/sys/kernel/random/uuid)
+  echo "sub volume uuid not provided, auto generated: $ro_subvol"
 elif [[ $2 =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
-  SUBVOL_UUID=$2
-  echo "sub volume uuid provided: $SUBVOL_UUID"
+  ro_subvol=$2
+  echo "sub volume uuid provided: $ro_subvol"
 else
   echo "error: invalid sub volume uuid"
   echo "usage: mkcow.sh /path/to/kernel/deb/file [subvolume uuid]"
@@ -39,25 +42,19 @@ rm -rf $IMG
 fallocate -l $((0x40000000)) $IMG
 
 # mk root btrfs volume & mount
-mkfs.btrfs -U $ROOTVOL_UUID -f $IMG
+mkfs.btrfs -U $root_vol -f $IMG
 mkdir -p $MNT
-mount -o loop $IMG $MNT
+mount -o loop,compress $IMG $MNT
 
 # create sub-dirs
 mkdir -p $MNT/boot
-mkdir -p $MNT/boot/tmp
-
-mkdir -p $MNT/cowroot
-mkdir -p $MNT/cowroot/ro
-mkdir -p $MNT/cowroot/rw
-mkdir -p $MNT/cowroot/tmp
-mkdir -p $MNT/cowroot/tmpvol 
+mkdir -p $MNT/vols
 
 echo "generate system.env"
 cat > $MNT/boot/system.env << EOF
-system_l=$SUBVOL_UUID
+system_l=$ro_subvol
 system_l_opts=ro
-system_r=$SUBVOL_UUID
+system_r=$ro_subvol
 system_r_opts=ro
 EOF
 
@@ -65,8 +62,7 @@ echo "installing u-boot script"
 cp scripts/u-boot/boot.cmd $MNT/boot
 mkimage -C none -A arm -T script -d $MNT/boot/boot.cmd $MNT/boot/boot.scr
 
-TMPVOL_UUID=$(uuidgen)
-TMPVOL=$MNT/cowroot/tmpvol/$TMPVOL_UUID
+TMPVOL=$MNT/vols/$tmp_subvol
 
 echo "TMPVOL: ${TMPVOL}"
 
@@ -162,8 +158,8 @@ echo "installing kernel"
 scripts/install-kernel.sh $TMPVOL $KDEB_FILE 
 
 # snapshot tmp_root to ro 
-# btrfs subvolume snapshot -r $TMPVOL $MNT/cowroot/ro/$SUBVOL_UUID
-btrfs subvolume snapshot $TMPVOL $MNT/cowroot/ro/$SUBVOL_UUID
+# btrfs subvolume snapshot -r $TMPVOL $MNT/cowroot/ro/$ro_subvol
+btrfs subvolume snapshot $TMPVOL $MNT/cowroot/ro/$ro_subvol
 btrfs subvolume delete $TMPVOL
 
 sync

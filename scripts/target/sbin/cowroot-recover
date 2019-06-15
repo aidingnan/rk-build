@@ -1,16 +1,23 @@
 #!/bin/bash
 
-# this script should only be called in cowroot hijacker
+# this script recover system.env when u-boot rejects switching.
 #
 # aa|ab -> aa|aa
+#
+# exit 0 if
+# 1. operation is applicable and succeeded.
+# 2. operation is not applicable.
+# 
+# if the operation succeeds, the recovered envs are recorded in runtime.env
+# - recovered
+# - recovered_opts 
 
 set -e
 
 source cowroot-env
 source $SYSTEM_ENV
-source $BOOT_ENV
+source $RUNTIME_ENV
 
-# aa|ab
 if 
   [ $loader_l == $loader_r ] &&
   [ $loader_l == $system_l ] &&
@@ -28,6 +35,7 @@ EOF
 
   mv $SYSTEM_TMP $SYSTEM_ENV
 
-  echo "recovered=$recovered" >> $BOOT_ENV
-  echo "recovered_opts=$recovered_opts" >> $BOOT_ENV
+  echo "recovered=$recovered" >> $RUNTIME_ENV
+  echo "recovered_opts=$recovered_opts" >> $RUNTIME_ENV
+
 fi

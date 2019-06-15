@@ -1,24 +1,15 @@
 #!/bin/bash
 
+root_vol=e383f6f7-6572-46a9-a7fa-2e0633015231     # root vol
+rw_subvol=ebcc3123-127a-4d26-b083-38e8c0bf7f09    # rw / working subvol
+tmp_subvol=07371046-38a3-43d5-9ded-d92584d7e751   # tmp / staging subvol
+
 UUID_REGEX="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
 
-ROOT_MNT=/run/cowroot/root                    # btrfs root volume mount point
+ROOT_MNT=/run/cowroot/root                        # btrfs root volume mount point
+RW_SUBVOL=$ROOT_MNT/vols/$rw_subvol
+TMP_SUBVOL=$ROOT_MNT/vols/$tmp_subvol
 
-ro_subvol_dir=cowroot/ro
-rw_subvol_dir=cowroot/rw
-
-RO_SUBVOL_DIR=$ROOT_MNT/$ro_subvol_dir
-RW_SUBVOL_DIR=$ROOT_MNT/$rw_subvol_dir
-
-rw_subvol_uuid=2f8aea9f-67f9-4136-88e2-63f5c943f0b0
-rw_subvol_path=$rw_subvol_dir/$rw_subvol_uuid
-
-RW_SUBVOL=$ROOT_MNT/$rw_subvol_path
-
-tmp_subvol=cowroot/tmp_subvol
-TMP_SUBVOL=$ROOT_MNT/$tmp_subvol              # temp volume (for upgrade)
-
-SYSTEM_ENV=$ROOT_MNT/boot/system.env          # system env file
-SYSTEM_TMP=$ROOT_MNT/boot/system.env.tmp      # temp system env file
-RUN_BOOT_DIR=/run/cowroot/boot
-BOOT_ENV=$RUN_BOOT_DIR/boot.env               # boot env file
+SYSTEM_ENV=$ROOT_MNT/boot/system.env              # system env file
+SYSTEM_TMP=$ROOT_MNT/boot/system.env.tmp          # temp system env file
+RUNTIME_ENV=$ROOT_MNT/cowroot/runtime.env         # boot env file

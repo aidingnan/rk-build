@@ -2,7 +2,7 @@
 
 source cowroot-env
 source $SYSTEM_ENV
-source $BOOT_ENV
+source $RUNTIME_ENV
 
 # ab|ab -> ab|bb
 if 

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#
+#
+#
+#
+#
+
 set -e
 
 opts=ro
@@ -26,7 +32,7 @@ shift $((OPTIND-1))
 
 source cowroot-env
 source $SYSTEM_ENV
-source $BOOT_ENV
+source $RUNTIME_ENV
 
 if [ ${loader_r} == ${system_l} ]; then 
   if [ ${system_l} == ${system_r} ]; then
@@ -65,7 +71,7 @@ EOF
   mv $SYSTEM_TMP $SYSTEM_ENV
 
 else
-  echo "neither _a|aa nor _a|ab, action not allowed"
+  echo "neither _a|aa nor _a|ab, operation not allowed"
   exit 1
 fi
 

@@ -13,24 +13,24 @@ CMDLINE=$(cat /proc/cmdline)
 IFS=' ' read -ra cmd_array <<< "$CMDLINE"
 for i in "${cmd_array[@]}"; do
   if [[ $i =~ root=UUID=${UUID_REGEX} ]]; then
-    root_vol_uuid=${i:10}
+    root_vol=${i:10}
   elif [[ $i == rootflags=* ]]; then
     IFS=',' read -ra rootflag_array <<< "${i:10}"
     for j in "${rootflag_array[@]}"; do
-      if [[ $j =~ ^subvol=/cowroot/ro/${UUID_REGEX} ]]; then
-        ro_root_subvol_uuid=${j:19}
-      elif [[ $j =~ ^subvol=cowroot/ro/${UUID_REGEX} ]]; then
-        ro_root_subvol_uuid=${j:18}
+      if [[ $j =~ ^subvol=/vols/${UUID_REGEX} ]]; then
+        ro_root_subvol=${j:19}
+      elif [[ $j =~ ^subvol=vols/${UUID_REGEX} ]]; then
+        ro_root_subvol=${j:18}
       fi  
     done
-  elif [[ $i == loaderflags=* ]]; then
+  elif [[ $i == cowrootflags=* ]]; then
     IFS=',' read -ra loaderflag_array <<< "${i:12}"
     for k in "${loaderflag_array[@]}"; do
       if [[ $k == op=* ]]; then
         loader_op=${k:3}
-      elif [[ $k =~ ^loader_l=${UUID_REGEX} ]]; then
+      elif [[ $k =~ ^l=${UUID_REGEX} ]]; then
         loader_l=${k:9}    
-      elif [[ $k =~ ^loader_r=${UUID_REGEX} ]]; then
+      elif [[ $k =~ ^r=${UUID_REGEX} ]]; then
         loader_r=${k:9}
       fi  
     done
@@ -40,18 +40,17 @@ done
 TMP_RW_ROOT=/tmp/rw-root
 
 mkdir -p $ROOT_MNT
-mkdir -p $(dirname $BOOT_ENV)
+mkdir -p $(dirname $RUNTIME_ENV)
 mkdir -p $TMP_RW_ROOT
 
 echo "mount root volume @ $ROOT_MNT"
-mount -t btrfs UUID=$root_vol_uuid $ROOT_MNT 2>&1 1>/dev/null
+mount -t btrfs UUID=$root_vol $ROOT_MNT 2>&1 1>/dev/null
 
 source $SYSTEM_ENV
 
-cat > $BOOT_ENV << EOF
-root_vol_uuid=$root_vol_uuid
-ro_root_subvol_uuid=$ro_root_subvol_uuid
-ro_root_subvol_path=$ro_subvol_dir/$ro_root_subvol_uuid
+cat > $RUNTIME_ENV << EOF
+root_vol=$root_vol
+ro_root_subvol=$ro_root_subvol
 _system_l=$system_l
 _system_l_opts=$system_l_opts
 _system_r=$system_r
@@ -62,33 +61,34 @@ loader_op=$loader_op
 EOF
 
 echo "generate boot.env"
-cat $BOOT_ENV
+cat $RUNTIME_ENV
 
-if cowroot-commit; then
-  source $BOOT_ENV
+cowroot-commit
+source $RUNTIME_ENV
+if [ -z $committed ]; then
   echo "rebooting to auto committed snapshot ${committed}..."
   umount $ROOT_MNT
   echo b > /proc/sysrq-trigger
 fi
 
-if cowroot-recover; then
-  source $BOOT_ENV
-  echo
+cowroot-recover
+source $RUNTIME_ENV
+if [ -z $recovered ]; then
+  echo "recovered from ${recovered} ${recovered_opts}"
 fi
-
 
 if [ -d $RW_SUBVOL ]; then
   echo "remove old ephemeral volume"
   btrfs subvolume delete $RW_SUBVOL 2>&1 1>/dev/null
 fi
 
-echo "create new ephemeral volume"
+echo "create new rw volume"
 btrfs subvolume snapshot / $RW_SUBVOL 2>&1 1>/dev/null
 mkdir -p $RW_SUBVOL/boot
-echo $ro_root_subvol_uuid > $RW_SUBVOL/boot/.parent
+echo $ro_root_subvol > $RW_SUBVOL/boot/.parent
 
-echo "mount new ephemeral volume as rw /"
-mount -t btrfs -o subvol=$rw_subvol_path UUID=$root_vol_uuid $TMP_RW_ROOT
+echo "mount new rw volume as /"
+mount -t btrfs -o subvol=vols/$rw_subvol UUID=$root_vol $TMP_RW_ROOT
 
 echo "pivot / to new ephemeral volume"
 cd $TMP_RW_ROOT

@@ -91,20 +91,20 @@ fi
 
 ROOTVOL="e383f6f7-6572-46a9-a7fa-2e0633015231"
 ROOT="root=UUID=${ROOTVOL}" 
-ROOTFLAGS="rootflags=subvol=/cowroot/ro/${loader_r} ro rootwait rootfstype=btrfs"
+ROOTFLAGS="rootflags=subvol=/vols/${loader_r} ro rootwait rootfstype=btrfs"
 CONSOLE="console=tty0 console=ttyS2,1500000"
 LOG="loglevel=0"
-LOADERFLAGS="loaderflags=system_l=${system_l},system_r=${system_r},loader_l=${loader_l},loader_r=${loader_r},op=${loader_op}"
+COWROOTFLAGS="cowrootflags=l=${loader_l},r=${loader_r},op=${loader_op}"
 
 echo ${ROOT}
 echo ${ROOTFLAGS}
 echo ${CONSOLE}
 echo ${LOG}
-echo ${LOADERFLAGS}
+echo ${COWROOTFLAGS}
 
-setenv bootargs "${ROOT} ${ROOTFLAGS} ${CONSOLE} ${LOG} ${LOADERFLAGS}"
+setenv bootargs "${ROOT} ${ROOTFLAGS} ${CONSOLE} ${LOG} ${COWROOTFLAGS}"
 
-SUBVOL_BOOT="/cowroot/ro/${loader_r}/boot"
+SUBVOL_BOOT="/vols/${loader_r}/boot"
 
 load ${devtype} ${devnum}:${partnum} ${ramdisk_addr_r} ${SUBVOL_BOOT}/uInitrd
 load ${devtype} ${devnum}:${partnum} ${kernel_addr_r} ${SUBVOL_BOOT}/Image
