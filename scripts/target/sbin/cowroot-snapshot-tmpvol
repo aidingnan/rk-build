@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -e
-
-source cowroot-env
-uuid=$(cat /proc/sys/kernel/random/uuid)
-RO_SUBVOL=$ROOT_MNT/$ro_subvol_dir/$uuid
-btrfs subvolume snapshot "$TMP_SUBVOL" "$RO_SUBVOL"
-echo $uuid

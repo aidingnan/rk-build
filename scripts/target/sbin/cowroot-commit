@@ -24,6 +24,6 @@ if
   uuid=$(cat /proc/sys/kernel/random/uuid)
   RO_SUBVOL=$ROOT_MNT/vols/$uuid
   btrfs subvolume snapshot "$RW_SUBVOL" "$RO_SUBVOL"
-  cowroot-checkout -m rd $uuid
+  cowroot-checkout -m rw $uuid
   echo "committed=$uuid" >> $RUNTIME_ENV
 fi

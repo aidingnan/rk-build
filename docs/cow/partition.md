@@ -7,9 +7,11 @@ $ rkdeveloptool wl 0x00     part.img        # MBR/DOS分区表
 $ rkdeveloptool wl 0x40     idbloader.img   # spl
 $ rkdeveloptool wl 0x4000   uboot.img       # uboot
 $ rkdeveloptool wl 0x6000   trust.img       # atf
-$ rkdeveloptool wl 0x10000  env.img         # raw env
-$ rkdeveloptool wl 0x20000  v.img           # btrfs volume
+$ rkdeveloptool wl 0xF000   -               # zero
+$ rkdeveloptool wl 0x10000  v.img           # btrfs volume
 ```
+
+There is no need to flash 0xF000, but it should be zero-ed.
 
 address (in sector) |size (in sector)|size (in byte)|file name|comment
 -|-|-|-|-
@@ -17,8 +19,8 @@ address (in sector) |size (in sector)|size (in byte)|file name|comment
 0x40|||idbloader.img|rockchip spl
 0x4000|||uboot.img|u-boot
 0x6000|||trust.img|arm trusted firmware, with or without optee
-0x10000|0x10000<br>65536|32 MiB or<br>33554432 bytes|uboot env
-0x20000|0xE70000<br>15138816|7392 MiB or<br>7751073792 bytes|btrfs volume
+0xF000|0x1000<br>4096|2 MiB or<br>2097152 bytes|uboot env
+0x10000|0xE80000<br>15204352|7424 MiB or<br>7784628224 bytes|btrfs volume
 0xE90000|||end (exclusive)
 
 - MiB is MebiByte, 1024 x 1024 bytes

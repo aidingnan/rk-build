@@ -23,5 +23,5 @@ EOF
   mv $SYSTEM_TMP $SYSTEM_ENV
 
   echo "confirmed=$confirmed" >> $RUNTIME_ENV
-  echo "confirmed_opts=$confirmed_opts" $RUNTIME_ENV
+  echo "confirmed_opts=$confirmed_opts" >> $RUNTIME_ENV
 fi

@@ -52,6 +52,10 @@ mkdir -p $ROOT_MNT $TMP_RW_ROOT
 echo "mount root volume @ $ROOT_MNT"
 mount -t btrfs UUID=$root_vol $ROOT_MNT 2>&1 1>/dev/null
 
+if [ ! -f $ROOT_MNT/boot/.max ]; then
+  btrfs filesystem resize max $ROOT_MNT && touch $ROOT_MNT/boot/.max
+fi
+
 [ -f $ROOT_MNT/boot/.debug_init ] && DEBUG=true
 
 source $SYSTEM_ENV
@@ -69,14 +73,14 @@ EOF
 
 [ $DEBUG ] && printenv "after generate runtime.env"
 
-echo "checking uncommitted rw volume ..."
 cowroot-commit
 [ $DEBUG ] && printenv "after cowroot-commit"
 
 source $SYSTEM_ENV
 source $RUNTIME_ENV
 if [ $committed ]; then
-  echo "rebooting to auto committed snapshot ${committed} ..."
+  echo "uncommitted rootfs found and committed, reboot to new snapshot ${committed} ..."
+  echo ""
   sync
   umount $ROOT_MNT
   echo b > /proc/sysrq-trigger
@@ -91,27 +95,23 @@ source $RUNTIME_ENV
 [ $recovered ] && echo "recovered from ${recovered} ${recovered_opts}"
 
 if [ -d $RW_SUBVOL ]; then
-  echo "remove rw volume"
   btrfs subvolume delete $RW_SUBVOL 2>&1 1>/dev/null
 fi
 
-echo "snapshot / to rw volume"
+echo "snapshot ro volume $ro_root_subvol to rw volume"
 btrfs subvolume snapshot / $RW_SUBVOL 2>&1 1>/dev/null
 mkdir -p $RW_SUBVOL/boot
-echo "set rw volume /boot/.parent to $ro_root_subvol"
 echo $ro_root_subvol > $RW_SUBVOL/boot/.parent
 
-echo "mount rw volume as /"
-mount -t btrfs -o subvol=vols/$rw_subvol,compress=lzo UUID=$root_vol $TMP_RW_ROOT
+mount -t btrfs -o subvol=vols/$rw_subvol UUID=$root_vol $TMP_RW_ROOT
 
-echo "pivot / to rw volume"
+echo "pivot_root to rw volume"
 cd $TMP_RW_ROOT
 mkdir ro-root
 pivot_root . ro-root
 
 # exec chroot . sh </dev/console >/dev/console 2>&1
 exec chroot . sh -c "$(cat <<END
-echo "move and remove mount points"
 mount --move /ro-root/run /run
 mount --move /ro-root/dev /dev
 mount --move /ro-root/sys /sys

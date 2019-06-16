@@ -43,18 +43,27 @@ shift $((OPTIND-1))
 if [ -z $opts ]; then
   echo "invalid args" 1>&2
   echo "mode not set"
+  exit 1
 elif [ $opts != ro ] && [ $opts != rw ]; then
   echo "invalid args" 1>&2
   echo "mode can only be ro or rw"
+  exit 1
 fi
 
 if [ "$1" ]; then
   if [[ "$1" =~ ^${UUID_REGEX} ]]; then
-    uuid=$1    
+    if [ -d "$ROOT_MNT/vols/$1" ]; then
+      uuid=$1    
+    else 
+      echo "entry not found" 1>&2
+      echo "$1 not found"
+      exit 1
+    fi
   else
     echo "invalid args" 1>&2
     echo "not a uuid: $1"
     exit 1
+  fi
 else 
   uuid=$system_r
 fi
@@ -68,4 +77,3 @@ EOF
 
 mv $SYSTEM_TMP $SYSTEM_ENV
 
-echo "success"

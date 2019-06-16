@@ -1,7 +1,7 @@
 # 
 env_mem_addr_r=0x08000000
 env_mem_size=0x1000
-cow_loader_mmc_block=0x11000
+cow_loader_mmc_block=0xF100
 loader_env_dirty="false"
 loader_op="none"
 
