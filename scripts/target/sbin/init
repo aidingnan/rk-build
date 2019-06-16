@@ -1,5 +1,14 @@
 #!/bin/bash
 
+function printenv () {
+  echo ">>>> $1"
+  echo "---- system.env"
+  cat $SYSTEM_ENV
+  echo "---- runtime.env"
+  cat $RUNTIME_ENV
+  echo ""
+}
+
 echo ""
 echo "COWROOT Hijacker"
 echo ""
@@ -18,36 +27,34 @@ for i in "${cmd_array[@]}"; do
     IFS=',' read -ra rootflag_array <<< "${i:10}"
     for j in "${rootflag_array[@]}"; do
       if [[ $j =~ ^subvol=/vols/${UUID_REGEX} ]]; then
-        ro_root_subvol=${j:19}
+        ro_root_subvol=${j:13}
       elif [[ $j =~ ^subvol=vols/${UUID_REGEX} ]]; then
-        ro_root_subvol=${j:18}
+        ro_root_subvol=${j:12}
       fi  
     done
   elif [[ $i == cowrootflags=* ]]; then
-    IFS=',' read -ra loaderflag_array <<< "${i:12}"
+    IFS=',' read -ra loaderflag_array <<< "${i:13}"
     for k in "${loaderflag_array[@]}"; do
       if [[ $k == op=* ]]; then
         loader_op=${k:3}
       elif [[ $k =~ ^l=${UUID_REGEX} ]]; then
-        loader_l=${k:9}    
+        loader_l=${k:2}    
       elif [[ $k =~ ^r=${UUID_REGEX} ]]; then
-        loader_r=${k:9}
+        loader_r=${k:2}
       fi  
     done
   fi  
 done
 
 TMP_RW_ROOT=/tmp/rw-root
-
-mkdir -p $ROOT_MNT
-mkdir -p $(dirname $RUNTIME_ENV)
-mkdir -p $TMP_RW_ROOT
+mkdir -p $ROOT_MNT $TMP_RW_ROOT
 
 echo "mount root volume @ $ROOT_MNT"
 mount -t btrfs UUID=$root_vol $ROOT_MNT 2>&1 1>/dev/null
 
-source $SYSTEM_ENV
+[ -f $ROOT_MNT/boot/.debug_init ] && DEBUG=true
 
+source $SYSTEM_ENV
 cat > $RUNTIME_ENV << EOF
 root_vol=$root_vol
 ro_root_subvol=$ro_root_subvol
@@ -60,37 +67,44 @@ loader_r=$loader_r
 loader_op=$loader_op
 EOF
 
-echo "generate boot.env"
-cat $RUNTIME_ENV
+[ $DEBUG ] && printenv "after generate runtime.env"
 
+echo "checking uncommitted rw volume ..."
 cowroot-commit
+[ $DEBUG ] && printenv "after cowroot-commit"
+
+source $SYSTEM_ENV
 source $RUNTIME_ENV
-if [ -z $committed ]; then
-  echo "rebooting to auto committed snapshot ${committed}..."
+if [ $committed ]; then
+  echo "rebooting to auto committed snapshot ${committed} ..."
+  sync
   umount $ROOT_MNT
   echo b > /proc/sysrq-trigger
+  exit 0
 fi
 
 cowroot-recover
+[ $DEBUG ] && printenv "after cowroot-recover"
+
+source $SYSTEM_ENV
 source $RUNTIME_ENV
-if [ -z $recovered ]; then
-  echo "recovered from ${recovered} ${recovered_opts}"
-fi
+[ $recovered ] && echo "recovered from ${recovered} ${recovered_opts}"
 
 if [ -d $RW_SUBVOL ]; then
-  echo "remove old ephemeral volume"
+  echo "remove rw volume"
   btrfs subvolume delete $RW_SUBVOL 2>&1 1>/dev/null
 fi
 
-echo "create new rw volume"
+echo "snapshot / to rw volume"
 btrfs subvolume snapshot / $RW_SUBVOL 2>&1 1>/dev/null
 mkdir -p $RW_SUBVOL/boot
+echo "set rw volume /boot/.parent to $ro_root_subvol"
 echo $ro_root_subvol > $RW_SUBVOL/boot/.parent
 
-echo "mount new rw volume as /"
-mount -t btrfs -o subvol=vols/$rw_subvol UUID=$root_vol $TMP_RW_ROOT
+echo "mount rw volume as /"
+mount -t btrfs -o subvol=vols/$rw_subvol,compress=lzo UUID=$root_vol $TMP_RW_ROOT
 
-echo "pivot / to new ephemeral volume"
+echo "pivot / to rw volume"
 cd $TMP_RW_ROOT
 mkdir ro-root
 pivot_root . ro-root

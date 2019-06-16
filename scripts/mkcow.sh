@@ -158,8 +158,8 @@ echo "installing kernel"
 scripts/install-kernel.sh $TMPVOL $KDEB_FILE 
 
 # snapshot tmp_root to ro 
-# btrfs subvolume snapshot -r $TMPVOL $MNT/cowroot/ro/$ro_subvol
-btrfs subvolume snapshot $TMPVOL $MNT/cowroot/ro/$ro_subvol
+# btrfs subvolume snapshot -r $TMPVOL $MNT/vols/$ro_subvol
+btrfs subvolume snapshot $TMPVOL $MNT/vols/$ro_subvol
 btrfs subvolume delete $TMPVOL
 
 sync

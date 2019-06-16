@@ -12,4 +12,4 @@ TMP_SUBVOL=$ROOT_MNT/vols/$tmp_subvol
 
 SYSTEM_ENV=$ROOT_MNT/boot/system.env              # system env file
 SYSTEM_TMP=$ROOT_MNT/boot/system.env.tmp          # temp system env file
-RUNTIME_ENV=$ROOT_MNT/cowroot/runtime.env         # boot env file
+RUNTIME_ENV=/run/cowroot/runtime.env              # boot env file

@@ -1,12 +1,8 @@
 #!/bin/bash
 
-SYSTEM_ENV=/run/cowroot/root/boot/system.env
-LOADER_ENV=/run/cowroot/boot/loader.env
+source cowroot-env
+echo ":: system.env"
+cat $SYSTEM_ENV
+echo ":: runtime.env"
+cat $RUNTIME_ENV
 
-source $SYSTEM_ENV
-source $LOADER_ENV
-
-echo "system_l: ${system_l} ${system_l_opts}"
-echo "system_r: ${system_r} ${system_r_tops}"
-echo "loader_l: ${loader_l}"
-echo "loader_r: ${loader_r}"

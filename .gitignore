@@ -5,6 +5,7 @@
 /mntp
 /mnta
 /mntb
+/mntcow
 
 *.tar.xz
 *.tar.gz
