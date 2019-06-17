@@ -44,7 +44,7 @@ fallocate -l $((0x40000000)) $IMG
 # mk root btrfs volume & mount
 mkfs.btrfs -U $root_vol -f $IMG
 mkdir -p $MNT
-mount -o loop,compress=zstd $IMG $MNT
+mount -o loop $IMG $MNT
 
 # create sub-dirs
 mkdir -p $MNT/boot
@@ -67,6 +67,7 @@ TMPVOL=$MNT/vols/$tmp_subvol
 echo "TMPVOL: ${TMPVOL}"
 
 btrfs subvolume create $TMPVOL
+# chattr +c $TMPVOL
 
 # expand
 tar xzf cache/debase.tar.gz -C $TMPVOL
