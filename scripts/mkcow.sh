@@ -39,7 +39,7 @@ IMG=cow.img
 # create image file
 rm -rf $IMG
 # fallocate -l $((0xE70000 * 0x200)) $IMG
-fallocate -l $((0x40000000)) $IMG
+fallocate -l $((0x60000000)) $IMG
 
 # mk root btrfs volume & mount
 mkfs.btrfs -U $root_vol -f $IMG
@@ -154,6 +154,13 @@ chroot $TMPVOL ln -s /lib/systemd/system/getty@.service /etc/systemd/system/gett
 # enable systemd-resolvd
 chroot $TMPVOL systemctl enable systemd-resolved
 ln -sf /run/systemd/resolve/resolv.conf $TMPVOL/etc/resolv.conf
+
+# install node
+tar xf cache/node-v10.16.0-linux-arm64.tar.xz -C $TMPVOL/usr --strip-components=1
+cp cache/master.zip $TMPVOL/root
+cd $TMPVOL/root
+unzip master.zip
+cd -
 
 echo "installing kernel"
 scripts/install-kernel.sh $TMPVOL $KDEB_FILE 
